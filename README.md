@@ -48,8 +48,8 @@ Built with Laravel and Bootstrap, the app features a clean interface and smooth 
 
 ## Technologies Used
 
--Laravel - PHP Framework
--Bootstrap 5 - UI Framework
--Bootstrap Icons - Icon Set
--PHP Libraries for document handling (e.g., PhpOffice, TCPDF, Imagick)
+- Laravel - PHP Framework
+- Bootstrap 5 - UI Framework
+- Bootstrap Icons - Icon Set
+- PHP Libraries for document handling (e.g., PhpOffice, TCPDF, Imagick)
 
