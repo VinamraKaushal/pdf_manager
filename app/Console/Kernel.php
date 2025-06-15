@@ -5,6 +5,7 @@ namespace App\Console;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\ClearPublicStorage;
 use Illuminate\Console\Scheduling\Schedule;
+use App\Models\GuestCredit;
 
 class Kernel extends ConsoleKernel {
     /**
@@ -21,6 +22,11 @@ class Kernel extends ConsoleKernel {
      */
     protected function schedule(Schedule $schedule) {
         $schedule->command('storage:clear')->dailyAt('00:00');
+
+        $schedule->call(function () {
+            GuestCredit::truncate();
+        })->daily();
+
     }
 
     /**

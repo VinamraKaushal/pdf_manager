@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GuestCreditService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use setasign\Fpdi\TcpdfFpdi;
+use Illuminate\Support\Str;
 
 class PdfLockUnlockController extends Controller {
+    protected $creditService;
+
+    public function __construct(GuestCreditService $creditService) {
+        $this->creditService = $creditService;
+    }
+
     public function showLockForm() {
         return view("lock_unlock_pdf.lock_pdf");
     }
@@ -19,10 +27,23 @@ class PdfLockUnlockController extends Controller {
         $request->validate([
             'pdfs' => 'required|array',
             'pdfs.*' => 'file|mimes:pdf|max:10000',
-            'password' => 'required|string|min:4',
+            'pdf_password' => 'required|string|min:4',
         ]);
 
-        $password = $request->input('password');
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
+
+        $password = $request->input('pdf_password');
         $converted = [];
         $folder = 'locked_pdfs';
 
@@ -71,10 +92,23 @@ class PdfLockUnlockController extends Controller {
         $request->validate([
             'pdfs' => 'required|array',
             'pdfs.*' => 'file|mimes:pdf|max:10000',
-            'password' => 'required|string|min:4',
+            'pdf_password' => 'required|string|min:4',
         ]);
 
-        $password = $request->input('password');
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
+
+        $password = $request->input('pdf_password');
         $converted = [];
         $folder = 'unlocked_pdfs';
 

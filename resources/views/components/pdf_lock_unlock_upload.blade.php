@@ -105,8 +105,8 @@
         </div>
 
         <div class="mb-4">
-          <label for="password" class="form-label text-primary fw-semibold fs-6">{{ __('Password') }}</label>
-          <input type="password" class="form-control form-control-lg" id="password" name="password" minlength="4" required>
+          <label for="pdf_password" class="form-label text-primary fw-semibold fs-6">{{ __('pdf_password') }}</label>
+          <input type="pdf_password" class="form-control form-control-lg" id="pdf_password" name="pdf_password" minlength="4" required>
         </div>
 
         <button type="submit" class="btn btn-lg btn-primary">

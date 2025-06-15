@@ -3,12 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Auth;
+use App\Services\GuestCreditService;
 use Illuminate\Http\Request;
 use setasign\Fpdi\Fpdi;
 use ZipArchive;
 
 class PDFOpsController extends Controller {
     protected $baseStoragePath = 'converted_pdfs';
+    protected $creditService;
+
+    public function __construct(GuestCreditService $creditService) {
+        $this->creditService = $creditService;
+    }
 
     public function mergeForm() {
         return view("pdf_ops.merge_pdf");
@@ -19,6 +26,19 @@ class PDFOpsController extends Controller {
             'pdfs' => 'required|array|min:2',
             'pdfs.*' => 'required|file|mimes:pdf|max:10240',
         ]);
+
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         $mergedFileName = 'merged_' . time() . '.pdf';
         $subfolder = 'merged';
@@ -62,6 +82,16 @@ class PDFOpsController extends Controller {
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:10240',
         ]);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits(1)) {
+                return back()->withErrors([
+                    'pdf' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits(1);
+        }
 
         $uploadedFile = $request->file('pdf');
         $sourceFilePath = $uploadedFile->getPathname();

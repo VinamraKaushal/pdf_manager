@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PDFOpsController;
 use App\Http\Controllers\ConvertToPDFController;
@@ -57,3 +59,19 @@ Route::controller(PDFOpsController::class)->group(function () {
     Route::get('/pdf/split', 'splitForm')->name('pdf.split.form');
     Route::post('/pdf/split', 'split')->name('pdf.split');
 });
+
+Route::controller(AuthController::class)->group(function () {
+    Route::post('/initiate-auth', 'initiateAuth')->name('auth.initiate');
+    Route::post('/verify-login-otp', 'verifyLoginOtp')->name('auth.verify-login-otp');
+    Route::post('/register', 'register')->name('auth.register');
+    Route::post('/verify-otp', 'verifyOtp')->name('auth.verify-otp');
+    Route::post('/resend-otp', 'resendOtp')->name('auth.resend-otp');
+});
+
+Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect()->route('home');
+})->name('logout');

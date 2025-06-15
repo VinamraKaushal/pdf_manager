@@ -6,6 +6,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory as ExcelIOFactory;
 use PhpOffice\PhpWord\IOFactory as WordIOFactory;
 use PhpOffice\PhpWord\Settings as WordSettings;
 use PhpOffice\PhpPresentation\IOFactory;
+use App\Services\GuestCreditService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -13,6 +15,11 @@ use Dompdf\Dompdf;
 use Exception;
 
 class ConvertToPDFController extends Controller {
+    protected $creditService;
+
+    public function __construct(GuestCreditService $creditService) {
+        $this->creditService = $creditService;
+    }
     public function wordToPdf() {
         return view("convert_to_pdf.doc_to_pdf");
     }
@@ -34,6 +41,19 @@ class ConvertToPDFController extends Controller {
             'documents' => 'required|array',
             'documents.*' => 'file|mimes:doc,docx,odt,txt|max:10240',
         ]);
+
+        $pdfFiles = $request->file('documents');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'documents' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         return $this->processDocuments(
             $request->file('documents'),
@@ -69,6 +89,19 @@ class ConvertToPDFController extends Controller {
             'excels.*' => 'file|mimes:xls,xlsx,csv|max:10240',
         ]);
 
+        $pdfFiles = $request->file('excels');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'excels' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
+
         return $this->processDocuments(
             $request->file('excels'),
             'converted_excels',
@@ -97,6 +130,19 @@ class ConvertToPDFController extends Controller {
             'presentations' => 'required|array',
             'presentations.*' => 'file|mimes:pptx|max:10240',
         ]);
+
+        $pdfFiles = $request->file('presentations');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'presentations' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         return $this->processDocuments(
             $request->file('presentations'),
@@ -138,6 +184,19 @@ class ConvertToPDFController extends Controller {
             'images' => 'required|array',
             'images.*' => 'image|max:10240',
         ]);
+
+        $pdfFiles = $request->file('images');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'images' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         $html = "<html><body style='margin:0; padding:0;'>";
 

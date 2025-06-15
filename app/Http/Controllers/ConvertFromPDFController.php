@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use App\Services\GuestCreditService;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\PhpWord;
 use Smalot\PdfParser\Parser;
 use Illuminate\Http\Request;
@@ -11,6 +13,11 @@ use Illuminate\Support\Str;
 use Spatie\PdfToImage\Pdf;
 
 class ConvertFromPDFController extends Controller {
+    protected $creditService;
+
+    public function __construct(GuestCreditService $creditService) {
+        $this->creditService = $creditService;
+    }
     public function pdfToPng() {
         return view("convert_from_pdf.pdf_to_png");
     }
@@ -20,6 +27,19 @@ class ConvertFromPDFController extends Controller {
             'pdfs' => 'required|array',
             'pdfs.*' => 'file|mimes:pdf|max:10000',
         ]);
+
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         $converted = [];
 
@@ -59,6 +79,19 @@ class ConvertFromPDFController extends Controller {
             'pdfs.*' => 'file|mimes:pdf|max:10000',
         ]);
 
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
+
         $converted = [];
 
         foreach ($request->file('pdfs') as $pdfFile) {
@@ -96,6 +129,19 @@ class ConvertFromPDFController extends Controller {
             'pdfs' => 'required|array',
             'pdfs.*' => 'file|mimes:pdf|max:10000',
         ]);
+
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         $converted = [];
         $parser = new Parser();
@@ -144,6 +190,19 @@ class ConvertFromPDFController extends Controller {
             'pdfs' => 'required|array',
             'pdfs.*' => 'file|mimes:pdf|max:10000',
         ]);
+
+        $pdfFiles = $request->file('pdfs');
+        $fileCount = count($pdfFiles);
+
+        if (!Auth::check()) {
+            if (!$this->creditService->hasEnoughCredits($fileCount)) {
+                return back()->withErrors([
+                    'pdfs' => 'Insufficient credits. Please log in or try later.',
+                ]);
+            }
+
+            $this->creditService->deductCredits($fileCount);
+        }
 
         $converted = [];
         $parser = new Parser();
