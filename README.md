@@ -29,7 +29,11 @@ Built with Laravel and Bootstrap, the app features a clean interface and smooth 
 - Split PDF files by pages or sections  
 - Lock PDF files with password protection  
 - Responsive and intuitive UI  
-- Fast and reliable document processing  
+- Fast and reliable document processing
+- Guest User and Authenticated User Logic
+- Guest users receive 10 credits per day to perform operations.
+- Authenticated users enjoy unlimited access without restrictions.
+- Smart Two-Factor Authentication (2FA) - Enhanced account security with OTP verification, intelligently bypassed for 6 hours on trusted IPs after a successful login.
 
 ---
 
